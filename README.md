@@ -25,7 +25,7 @@ You can also find Crashlife for iOS [here](https://github.com/buglife/crashlife-
 
 ## Installation
 
-1. Add `crashlife-android` as a dependency to your app's `build.gradle`. You'll also need to add [Android Volley](https://developer.android.com/training/volley/) if you haven't already.
+1. Add `crashlife-android` as a dependency to your app's `build.gradle`.
 
 	```groovy
 	dependencies {
