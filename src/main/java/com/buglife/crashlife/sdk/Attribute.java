@@ -53,6 +53,21 @@ final class Attribute implements Parcelable {
                 return Integer.toString(flag);
         }
     }
+    private static int getFlagForName(String name) {
+        if (name == null || name.isEmpty()) {
+            return FLAG_CUSTOM;
+        }
+        if (name.equals("system")) {
+            return FLAG_SYSTEM;
+        }
+        if (name.equals("public")) {
+            return FLAG_PUBLIC;
+        }
+        if (name.equals("internal")) {
+            return FLAG_INTERNAL;
+        }
+        return FLAG_CUSTOM; // ???
+    }
     enum ValueType {
         STRING(0),
         INT(1),
@@ -153,11 +168,12 @@ final class Attribute implements Parcelable {
         ValueType valueType;
         int flags;
         try {
-            value = jsonObject.getString("value");
+            value = jsonObject.getString("value"); //if there isn't a value, this is a shitty attribute, and we should skip it.
             valueType = ValueType.STRING; // everything is a string now
-            flags = jsonObject.getInt("flags");
+            String flagsString = JsonUtils.safeGetString(jsonObject, "flags");
+            flags = getFlagForName(flagsString);
         } catch (JSONException e) {
-            //Is this really useful?
+            //Is this really useful? Answer: yes.
             e.printStackTrace();
             return null;
         }

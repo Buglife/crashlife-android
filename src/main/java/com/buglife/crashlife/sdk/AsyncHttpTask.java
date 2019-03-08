@@ -34,7 +34,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 
 final class AsyncHttpTask extends AsyncTask<String, Void, Void> {
-    static final String BASE_URL = "https://buglife-staging.herokuapp.com";
+    static final String BASE_URL = "https://buglife.com";
     private final String mBody;
     private final Runnable mSuccess;
     private final Runnable mFailure;
