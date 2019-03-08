@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://ds9bjnn93rsnp.cloudfront.net/assets/logo/logotype_black_on_transparent_782x256-7256a7ab03e9652908f43be94681bc4ebeff6d729c36c946c346a80a4f8ca245.png" width=300 />
+	<img src="https://ds9bjnn93rsnp.cloudfront.net/assets/temp/crashlife_logo_github-45fd44376f131c331d787105fbe6814d5c3e9149372d0a26b891924cefa08032.png" width=300 />
 </p>
 
 [![Twitter](https://img.shields.io/badge/twitter-@BuglifeApp-blue.svg)](https://twitter.com/buglifeapp)
@@ -19,9 +19,8 @@ You can also find Crashlife for iOS [here](https://github.com/buglife/crashlife-
 |---|---------------|
 | 📖 | Open source |
 | 🏃🏽‍♀️ | Fast & lightweight |
-| 📩 | Automatic caching & retry |
 | 📜 | Custom attributes  |
-| ℹ️ | Captured footprints and logs, with debug / info / warning levels |
+| ℹ️ | Captured footprints and logs, with info / warning / error levels |
 
 ## Installation
 
@@ -29,7 +28,7 @@ You can also find Crashlife for iOS [here](https://github.com/buglife/crashlife-
 
 	```groovy
 	dependencies {
-		implementation 'com.buglife.crashlife.sdk:crashlife-android:0.9.1'
+		implementation 'com.buglife.sdk:crashlife-android:0.9.1'
 	}
 	```
 
