@@ -38,6 +38,7 @@ public class SessionSnapshot implements Parcelable {
     private final String mBundleName;
     @Nullable private final String mBundleShortVersion;
     @Nullable private final String mBundleVersion;
+    private final boolean mDebugBuild;
 
     public SessionSnapshot(Context context, String userIdentifier) {
         mPlatform = "android";
@@ -47,6 +48,7 @@ public class SessionSnapshot implements Parcelable {
         mBundleIdentifier = context.getPackageName();
 
         ApplicationInfo applicationInfo = context.getApplicationInfo();
+        mDebugBuild = ((applicationInfo.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0);
         int stringId = applicationInfo.labelRes;
         mBundleName = stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() : context.getString(stringId);
 
@@ -68,7 +70,7 @@ public class SessionSnapshot implements Parcelable {
 
     private SessionSnapshot(String mPlatform, String mSDKVersion, String mSDKName, String mUserIdentifier,
                             String mBundleIdentifier, String mBundleName, @Nullable String mBundleShortVersion,
-                            @Nullable String mBundleVersion) {
+                            @Nullable String mBundleVersion, boolean mDebugBuild) {
         this.mPlatform = mPlatform;
         this.mSDKVersion = mSDKVersion;
         this.mSDKName = mSDKName;
@@ -77,6 +79,7 @@ public class SessionSnapshot implements Parcelable {
         this.mBundleName = mBundleName;
         this.mBundleShortVersion = mBundleShortVersion;
         this.mBundleVersion = mBundleVersion;
+        this.mDebugBuild = mDebugBuild;
     }
 
     private String getPlatform() {
@@ -113,6 +116,8 @@ public class SessionSnapshot implements Parcelable {
         return mBundleName;
     }
 
+    private boolean getDebugBuild() { return mDebugBuild; }
+
     /* Parcelable */
 
     SessionSnapshot(Parcel in) {
@@ -124,6 +129,7 @@ public class SessionSnapshot implements Parcelable {
         mBundleVersion = in.readString();
         mBundleIdentifier = in.readString();
         mBundleName = in.readString();
+        mDebugBuild = in.readInt() != 0;
     }
 
     @Override
@@ -136,6 +142,7 @@ public class SessionSnapshot implements Parcelable {
         dest.writeString(mBundleVersion);
         dest.writeString(mBundleIdentifier);
         dest.writeString(mBundleName);
+        dest.writeInt(mDebugBuild ? 1 : 0);
     }
 
     @Override
@@ -166,6 +173,7 @@ public class SessionSnapshot implements Parcelable {
         JsonUtils.safePut(result,"bundle_name", getBundleName());
         JsonUtils.safePut(result,"bundle_short_version", getBundleShortVersion());
         JsonUtils.safePut(result,"bundle_version", getBundleVersion());
+        JsonUtils.safePut(result,"is_debug", getDebugBuild());
         return result;
     }
 
@@ -178,9 +186,10 @@ public class SessionSnapshot implements Parcelable {
         String bundleName = JsonUtils.safeGetString(jsonObject,"bundle_name");
         String bundleShortVersion = JsonUtils.safeGetString(jsonObject,"bundle_short_version");
         String bundleVersion = JsonUtils.safeGetString(jsonObject,"bundle_version");
+        boolean debugBuild = JsonUtils.safeGetBoolean(jsonObject,"is_debug");
 
         return new SessionSnapshot(platform, sdkVersion, sdkName, userIdentifier,
-                bundleIdentifier, bundleName, bundleShortVersion, bundleVersion);
+                bundleIdentifier, bundleName, bundleShortVersion, bundleVersion, debugBuild);
     }
 
 }

@@ -28,11 +28,11 @@ final class Submitter {
     Submitter() {
     }
 
-    void submitEvents(@NonNull String apiKey, @NonNull AppData appData, @NonNull List<Event> events, @NonNull Runnable success, @NonNull Runnable failure) {
+    void submitEvents(@NonNull String apiKey, @NonNull SessionSnapshot currentSession, @NonNull List<Event> events, @NonNull Runnable success, @NonNull Runnable failure) {
         JSONObject params = new JSONObject();
         JsonUtils.tryPut(params, "api_key", apiKey);
 
-        JSONObject appJson = appData.toJSON();
+        JSONObject appJson = currentSession.toCacheJson();
         JsonUtils.tryPut(params, "app", appJson);
 
         JSONArray eventsJson = new JSONArray();

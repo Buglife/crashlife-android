@@ -55,7 +55,8 @@ class Event {
                   @Nullable String message,
                   @NonNull AttributeMap attributeMap,
                   @NonNull List<Footprint> footprints,
-                  @Nullable Severity severity, long timestamp) {
+                  @Nullable Severity severity,
+                  long timestamp) {
         mUuid = uuid;
         mThreadDatas = threadDatas;
         mExceptionDatas = exceptionDatas;

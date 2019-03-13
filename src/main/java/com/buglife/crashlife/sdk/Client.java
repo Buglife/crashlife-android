@@ -46,7 +46,7 @@ final class Client {
     @NonNull
     private final AttributeMap mAttributes;
     @NonNull
-    private final AppData mAppData;
+    private final SessionSnapshot mWorkingSessionSnapshot;
     @NonNull
     private final ArrayList<Footprint> mFootprints;
     @NonNull
@@ -72,7 +72,7 @@ final class Client {
         mContext = context;
         mApiKey = apiKey;
         mAttributes = new AttributeMap();
-        mAppData = new AppData(context);
+        mWorkingSessionSnapshot = new SessionSnapshot(context, "");
         mFootprints = new ArrayList<>();
         mUserIdentifier = "";
         mAttributesAndFootprintsLock = new Object();
@@ -109,7 +109,7 @@ final class Client {
         };
         if (cachedEvents.size() > 0) {
             Submitter submitter = new Submitter();
-            submitter.submitEvents(mApiKey, mAppData, allEvents, deletionRunnable, failure);
+            submitter.submitEvents(mApiKey, mWorkingSessionSnapshot, allEvents, deletionRunnable, failure);
         }
     }
 
@@ -129,7 +129,7 @@ final class Client {
                 Log.e("Posting event failed, will try again on next launch");
             }
         };
-        submitter.submitEvents(mApiKey, mAppData, events, success, failure);
+        submitter.submitEvents(mApiKey, mWorkingSessionSnapshot, events, success, failure);
 
     }
 
@@ -262,6 +262,10 @@ final class Client {
         synchronized (mAttributesAndFootprintsLock) {
             return mFootprints;
         }
+    }
+
+    SessionSnapshot getWorkingSessionSnapshot() {
+        return mWorkingSessionSnapshot;
     }
 
     int getCachedEventCount() {
