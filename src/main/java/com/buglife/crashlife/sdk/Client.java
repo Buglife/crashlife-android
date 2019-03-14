@@ -65,7 +65,7 @@ final class Client {
     @NonNull
     private final Object mUserIdentifierLock;
 
-    Client(@NonNull Context context, @NonNull String apiKey) {
+    Client(@NonNull Context context, @NonNull final String apiKey) {
         mReportCache = new ReportCache(context);
         CrashCatcher mCrashCatcher = new CrashCatcher(context, mReportCache);
         Thread.setDefaultUncaughtExceptionHandler(mCrashCatcher);
@@ -89,6 +89,15 @@ final class Client {
         HandlerThread mPersisterThread = new HandlerThread("com.buglife.crashlife.persistence");
         mPersisterThread.start();
         mHandler = new Handler(mPersisterThread.getLooper());
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ClientEventReporter.getInstance(mContext).reportClientEvent("app_launch", apiKey);
+            }
+        }, 10000);
+
     }
 
     void postCachedEvents() {

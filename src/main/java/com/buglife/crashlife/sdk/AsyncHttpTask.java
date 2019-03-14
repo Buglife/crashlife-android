@@ -38,12 +38,14 @@ final class AsyncHttpTask extends AsyncTask<String, Void, Void> {
     private final String mBody;
     private final Runnable mSuccess;
     private final Runnable mFailure;
+    private final String mEndpoint;
 
 
-    AsyncHttpTask(String body, Runnable success, Runnable failure) {
+    AsyncHttpTask(String body, Runnable success, Runnable failure, String endpoint) {
         mBody = body;
         mSuccess = success;
         mFailure = failure;
+        mEndpoint = endpoint;
     }
 
     @Override
@@ -56,7 +58,7 @@ final class AsyncHttpTask extends AsyncTask<String, Void, Void> {
         URL url;
         Handler mainThreadHandler = new Handler(Looper.getMainLooper());
         try {
-            url = new URL(BASE_URL + "/api/v1/events.json");
+            url = new URL(BASE_URL + mEndpoint);
         } catch (MalformedURLException e) {
             e.printStackTrace();
             mainThreadHandler.post(mFailure);

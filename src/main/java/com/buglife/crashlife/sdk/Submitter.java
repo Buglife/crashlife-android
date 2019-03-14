@@ -29,11 +29,7 @@ final class Submitter {
     }
 
     void submitEvents(@NonNull String apiKey, @NonNull SessionSnapshot currentSession, @NonNull List<Event> events, @NonNull Runnable success, @NonNull Runnable failure) {
-        JSONObject params = new JSONObject();
-        JsonUtils.tryPut(params, "api_key", apiKey);
-
-        JSONObject appJson = currentSession.toCacheJson();
-        JsonUtils.tryPut(params, "app", appJson);
+        JSONObject params = startingParams(apiKey, currentSession);
 
         JSONArray eventsJson = new JSONArray();
 
@@ -46,7 +42,28 @@ final class Submitter {
         JsonUtils.tryPut(params, "occurrences", eventsJson);
 
         String paramString = params.toString();
-        AsyncHttpTask task = new AsyncHttpTask(paramString, success, failure); 
+        String endpoint = "/api/v1/events.json";
+        AsyncHttpTask task = new AsyncHttpTask(paramString, success, failure, endpoint);
         task.execute();
+    }
+
+    void submitClientEvent(@NonNull String apiKey, @NonNull SessionSnapshot currentSession, @NonNull JSONObject clientEventParams, @NonNull Runnable success, @NonNull Runnable failure) {
+        JSONObject params = startingParams(apiKey, currentSession);
+
+        JsonUtils.tryPut(params, "client_event", clientEventParams);
+
+        String paramString = params.toString();
+        String endpoint = "/api/v1/client_events.json";
+        AsyncHttpTask task = new AsyncHttpTask(paramString, success, failure, endpoint);
+        task.execute();
+    }
+
+    private JSONObject startingParams(@NonNull String apiKey, @NonNull SessionSnapshot currentSession) {
+        JSONObject params = new JSONObject();
+        JsonUtils.tryPut(params, "api_key", apiKey);
+
+        JSONObject appJson = currentSession.toCacheJson();
+        JsonUtils.tryPut(params, "app", appJson);
+        return params;
     }
 }

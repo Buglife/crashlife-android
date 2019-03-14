@@ -86,25 +86,25 @@ public class SessionSnapshot implements Parcelable {
         return mPlatform;
     }
 
-    private String getSDKVersion() {
+    String getSDKVersion() {
         return mSDKVersion;
     }
 
-    private String getSDKName() {
+    String getSDKName() {
         return mSDKName;
     }
 
-    private String getUserIdentifier() {
+    String getUserIdentifier() {
         return mUserIdentifier;
     }
 
     @Nullable
-    private String getBundleShortVersion() {
+    String getBundleShortVersion() {
         return mBundleShortVersion;
     }
 
     @Nullable
-    private String getBundleVersion() {
+    String getBundleVersion() {
         return mBundleVersion;
     }
 

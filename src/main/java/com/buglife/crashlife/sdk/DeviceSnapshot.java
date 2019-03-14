@@ -69,7 +69,7 @@ public final class DeviceSnapshot implements Parcelable {
     }
 
     @Nullable
-    private String getDeviceIdentifier() {
+    String getDeviceIdentifier() {
         return mDeviceIdentifier;
     }
 
