@@ -40,8 +40,8 @@ final class ReportCache {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     ReportCache(Context context) {
-        File reportDir = new File(context.getCacheDir(), "crashlife_events");
-        File nativeReportDir = new File(context.getCacheDir(), "crashlife_native");
+        File reportDir = new File(context.getFilesDir(), "crashlife_events");
+        File nativeReportDir = new File(context.getFilesDir(), "crashlife_native");
 
         if (!reportDir.exists()) {
             reportDir.mkdir();
