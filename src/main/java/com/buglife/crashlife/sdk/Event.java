@@ -189,7 +189,7 @@ class Event {
             JsonUtils.safePut(result, "crashing_thread", mCrashingThread.toCacheJson());
         }
         JsonUtils.safePut(result,"message", mMessage);
-        JsonUtils.safePut(result,"attribute_map", mAttributeMap.toCacheJson());
+        JsonUtils.safePut(result,"attributes_map", mAttributeMap.toCacheJson());
         JsonUtils.safePut(result,"footprints", JsonUtils.listToCacheJson(mFootprints));
         if (mSeverity != null) {
             JsonUtils.safePut(result, "severity_ordinal", mSeverity.ordinal());
@@ -227,7 +227,7 @@ class Event {
 
         message = JsonUtils.safeGetString(jsonObject,"message");
 
-        JSONObject attributeMapJson = JsonUtils.safeGetJSONObject(jsonObject,"attribute_map");
+        JSONArray attributeMapJson = JsonUtils.safeGetJSONArray(jsonObject,"attributes_map");
         if (attributeMapJson != null) {
             attributeMap = AttributeMap.fromCacheJson(attributeMapJson);
         }

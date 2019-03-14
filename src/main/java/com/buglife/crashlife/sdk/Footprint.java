@@ -93,9 +93,12 @@ class Footprint implements Parcelable, JSONCaching {
 
         name = JsonUtils.safeGetString(jsonObject,"name");
         timestamp = JsonUtils.safeGetLong(jsonObject,"timestamp");
-        JSONObject attributeMapJson = JsonUtils.safeGetJSONObject(jsonObject,"metadata");
+        JSONArray attributeMapJson = JsonUtils.safeGetJSONArray(jsonObject,"metadata");
         if (attributeMapJson != null) {
             attributeMap = AttributeMap.fromCacheJson(attributeMapJson);
+        }
+        else {
+            attributeMap = new AttributeMap();
         }
 
         return new Footprint(name, attributeMap, timestamp);

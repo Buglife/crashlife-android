@@ -127,7 +127,7 @@ final class ReportCache {
             AttributeMap attributeMap;
             try {
                 String jsonString = IOUtils.readStringFromFile(attributesFile);
-                JSONObject attributeMapJson = new JSONObject(jsonString);
+                JSONArray attributeMapJson = new JSONArray(jsonString);
                 attributeMap = AttributeMap.fromCacheJson(attributeMapJson);
             } catch (Exception e) {
                 // There may not be any attributes, so don't scream about it. No e.printStacktrace()!

@@ -99,7 +99,7 @@ final class PostEventSerializer {
         JSONArray footprintsJson = JsonUtils.listToCacheJson(mEvent.getFootprints());
 
         AttributeMap attributeMap = mEvent.getAttributeMap();
-        JSONObject attributeMapJson = attributeMap.toCacheJson();
+        JSONArray attributeMapJson = attributeMap.toCacheJson();
 
         JsonUtils.tryPut(result, "attributes", attributeMapJson);
         JsonUtils.tryPut(result, "footprints", footprintsJson);

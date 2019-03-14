@@ -22,6 +22,7 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -108,35 +109,51 @@ final class AttributeMap implements Parcelable {
     }
 
     @NonNull
-    JSONObject toCacheJson() {
-        JSONObject dict = new JSONObject();
+    JSONArray toCacheJson() {
+        JSONArray attributesJSON = new JSONArray();
         for (String key : mAttributes.keySet()) {
             Attribute attr = mAttributes.get(key);
             if (attr != null) {
-                JsonUtils.tryPut(dict, key, attr.toCacheJson());
+                JSONObject attrDict = attr.toCacheJson();
+                JSONObject fullDict = new JSONObject();
+                JsonUtils.tryPut(fullDict, "key", key);
+                //add the entries of attrDict to fullDict
+                Iterator it = attrDict.keys();
+                while (it.hasNext()) {
+                    String attrKey = (String) it.next();
+                    JsonUtils.safePut(fullDict, attrKey, JsonUtils.safeGetString(attrDict, attrKey));
+                }
+                attributesJSON.put(fullDict);
             }
         }
-        return dict;
+        return attributesJSON;
     }
 
-    @NonNull static AttributeMap fromCacheJson(JSONObject jsonObject) {
+    @NonNull static AttributeMap fromCacheJson(JSONArray jsonArray) {
         AttributeMap attributes = new AttributeMap();
 
-        Iterator<String> itr = jsonObject.keys();
-        while (itr.hasNext()) {
-            String key = itr.next();
-            try {
-                JSONObject jsonAttribute = jsonObject.getJSONObject(key);
-                Attribute attribute = Attribute.fromCacheJson(jsonAttribute);
-                if (attribute == null) {
-                    continue;
+        if (jsonArray != null) {
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject fullDict = jsonArray.optJSONObject(i);
+                if (fullDict != null) {
+                    String key = fullDict.optString("key");
+                    if (key == null) {
+                        continue;
+                    }
+                    //create a shallow copy, remove the "key" entry, and create an attribute
+                    JSONObject attrDict = new JSONObject();
+                    for (Iterator<String> iterator = fullDict.keys(); iterator.hasNext(); ) {
+                        String attrPartKey = iterator.next();
+                        String value = fullDict.optString(attrPartKey);
+                        JsonUtils.safePut(attrDict, attrPartKey, value);
+                    }
+                    attrDict.remove("key");
+                    Attribute attr = Attribute.fromCacheJson(attrDict);
+                    attributes.put(key, attr);
                 }
-                attributes.put(key, attribute);
-            } catch (JSONException e) {
-                e.printStackTrace(); // :rolleyes:
             }
         }
-
         return attributes;
     }
 }
