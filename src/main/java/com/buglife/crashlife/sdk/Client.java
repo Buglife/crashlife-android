@@ -17,6 +17,7 @@
 
 package com.buglife.crashlife.sdk;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -279,4 +280,19 @@ final class Client {
             return mUserIdentifier;
         }
     }
+
+    static String getProcessName(Context context) {
+        int pid = android.os.Process.myPid();
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> infos = manager.getRunningAppProcesses();
+        if (infos != null) {
+            for (ActivityManager.RunningAppProcessInfo processInfo : infos) {
+                if (processInfo.pid == pid) {
+                    return processInfo.processName;
+                }
+            }
+        }
+        return null;
+    }
+
 }

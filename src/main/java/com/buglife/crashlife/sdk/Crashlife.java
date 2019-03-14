@@ -31,14 +31,15 @@ public final class Crashlife {
 
     private Crashlife() {}
 
-    public static void initWithApiKey(@NonNull Context context, @NonNull String apiKey) {
+    public static synchronized void initWithApiKey(@NonNull Context context, @NonNull String apiKey) {
+        if (!isMainProcess(context)) {
+            return;
+        }
         boolean alreadyStarted = false;
-        synchronized (Crashlife.class) {
-            if (sClient == null) {
-                sClient = new Client(context, apiKey);
-            } else {
-                alreadyStarted = true;
-            }
+        if (sClient == null) {
+            sClient = new Client(context, apiKey);
+        } else {
+            alreadyStarted = true;
         }
         if (alreadyStarted) {
             Log.e("You have attempted to start Crashlife twice. This is being ignored, but probably indicates an error in your application.");
@@ -111,6 +112,15 @@ public final class Crashlife {
             getClient().leaveFootprint(name, new HashMap<String, String>());
         }
     }
+
+    private static boolean isMainProcess(Context context) {
+        String processName = Client.getProcessName(context);
+        if (processName == null) {
+            return true; // this can apparently happen sometimes, but only to the main process
+        }
+        return context.getPackageName().equals(processName);
+    }
+
 
 
     @SuppressWarnings("WeakerAccess")

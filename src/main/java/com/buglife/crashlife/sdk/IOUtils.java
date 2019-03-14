@@ -35,6 +35,7 @@ class IOUtils {
         InputStream input = new ByteArrayInputStream(data.getBytes());
         try {
             write(input, output);
+            output.flush();
         } finally {
             closeQuietly(output);
             closeQuietly(input);
