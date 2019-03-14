@@ -117,7 +117,7 @@ final class Client {
                 Log.e("Posting cached events failed, will try again on next launch");
             }
         };
-        if (cachedEvents.size() > 0) {
+        if (allEvents.size() > 0) {
             Submitter submitter = new Submitter();
             submitter.submitEvents(mApiKey, mWorkingSessionSnapshot, allEvents, deletionRunnable, failure);
         }
