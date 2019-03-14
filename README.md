@@ -28,7 +28,7 @@ You can also find Crashlife for iOS [here](https://github.com/buglife/crashlife-
 
 	```groovy
 	dependencies {
-		implementation 'com.buglife.sdk:crashlife-android:1.0.3'
+		implementation 'com.buglife.sdk:crashlife-android:1.0.4'
 	}
 	```
 
