@@ -31,15 +31,7 @@ final class Submitter {
     void submitEvents(@NonNull String apiKey, @NonNull SessionSnapshot currentSession, @NonNull List<Event> events, @NonNull Runnable success, @NonNull Runnable failure) {
         JSONObject params = startingParams(apiKey, currentSession);
 
-        JSONArray eventsJson = new JSONArray();
-
-        for (Event event : events) {
-            PostEventSerializer serializer = new PostEventSerializer(event);
-            JSONObject eventJson = serializer.generateJSON();
-            eventsJson.put(eventJson);
-        }
-
-        JsonUtils.tryPut(params, "occurrences", eventsJson);
+        JsonUtils.tryPut(params, "occurrences", JsonUtils.listToCacheJson(events));
 
         String paramString = params.toString();
         String endpoint = "/api/v1/events.json";

@@ -33,7 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-class Event {
+class Event implements JSONCaching {
 
     enum Severity {
         INFO,
@@ -47,6 +47,7 @@ class Event {
     @Nullable private final List<ExceptionData> mExceptionDatas;
     @Nullable private final ThreadData mCrashingThread;
     @Nullable private final String mMessage;
+    @Nullable private final String mTombstone;
     @NonNull private final AttributeMap mAttributeMap;
     @NonNull private final List<Footprint> mFootprints;
     @Nullable private final Severity mSeverity;
@@ -57,6 +58,7 @@ class Event {
                   @Nullable List<ExceptionData> exceptionDatas,
                   @Nullable ThreadData crashingThread,
                   @Nullable String message,
+                  @Nullable String tombstone,
                   @NonNull AttributeMap attributeMap,
                   @NonNull List<Footprint> footprints,
                   @Nullable Severity severity,
@@ -66,6 +68,7 @@ class Event {
         mExceptionDatas = exceptionDatas;
         mCrashingThread = crashingThread;
         mMessage = message;
+        mTombstone = tombstone;
         mAttributeMap = attributeMap;
         mFootprints = footprints;
         mSeverity = severity;
@@ -79,16 +82,17 @@ class Event {
         mThreadDatas = ThreadData.threadDatas(Thread.getAllStackTraces());
         mCrashingThread = null;
         mMessage = null;
+        mTombstone = null;
         mSeverity = Severity.ERROR;
         mAttributeMap = attributeMap;
         mFootprints = footprints;
         mTimestamp = new Date();
     }
     Event(@NonNull Severity severity, @NonNull String message, @NonNull AttributeMap attributeMap, List<Footprint> footprints) {
-        this(generateUuid(), new ArrayList<ThreadData>(), new ArrayList<ExceptionData>(), null, message, attributeMap, footprints, severity, new Date());
+        this(generateUuid(), new ArrayList<ThreadData>(), new ArrayList<ExceptionData>(), null, message, null, attributeMap, footprints, severity, new Date());
     }
     private Event(Severity severity, String tombstone, AttributeMap attributeMap, List<Footprint> footprints, String uuid) {
-        this(uuid, new ArrayList<ThreadData>(), new ArrayList<ExceptionData>(), null, tombstone,  attributeMap, footprints, severity, new Date());
+        this(uuid, new ArrayList<ThreadData>(), new ArrayList<ExceptionData>(), null, null, tombstone, attributeMap, footprints, severity, new Date());
     }
 
 
@@ -104,10 +108,11 @@ class Event {
         List<StackFrame> stackFrames = StackFrame.stackFrames(crashedThread.getStackTrace());
         mCrashingThread = new ThreadData(crashedThread, stackFrames);
         mMessage = originalException.getMessage();
+        mTombstone = null;
         mAttributeMap = attributeMap;
         mFootprints = footprints;
         mSeverity = Severity.CRASH;
-        mTimestamp = new Date();
+        mTimestamp = new Date(0); // make it obvious we did something wrong, forgot to set the timestamp
     }
 
     public static Event info(@NonNull String message, @NonNull AttributeMap attributeMap, List<Footprint> footprints) {
@@ -168,7 +173,7 @@ class Event {
     }
 
     @NonNull
-    synchronized JSONObject toCacheJson() {
+    public synchronized JSONObject toCacheJson() {
         JSONObject result = new JSONObject();
 
         JsonUtils.safePut(result,"uuid", mUuid);
@@ -182,6 +187,7 @@ class Event {
             JsonUtils.safePut(result, "crashing_thread", mCrashingThread.toCacheJson());
         }
         JsonUtils.safePut(result,"message", mMessage);
+        JsonUtils.safePut(result, "android_tombstone", mTombstone);
         JsonUtils.safePut(result,"attributes_map", mAttributeMap.toCacheJson());
         JsonUtils.safePut(result,"footprints", JsonUtils.listToCacheJson(mFootprints));
         if (mSeverity != null) {
@@ -254,6 +260,6 @@ class Event {
             timestamp = new Date();
         }
 
-        return new Event(uuid, threadDatas, exceptionDatas, crashingThread, message, attributeMap, footprints, severity, timestamp);
+        return new Event(uuid, threadDatas, exceptionDatas, crashingThread, message, null, attributeMap, footprints, severity, timestamp);
     }
 }
