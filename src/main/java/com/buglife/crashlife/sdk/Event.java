@@ -24,8 +24,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -46,7 +50,7 @@ class Event {
     @NonNull private final AttributeMap mAttributeMap;
     @NonNull private final List<Footprint> mFootprints;
     @Nullable private final Severity mSeverity;
-    private long mTimestamp;
+    @NonNull private Date mTimestamp;
 
     private Event(@NonNull String uuid,
                   @Nullable List<ThreadData> threadDatas,
@@ -56,7 +60,7 @@ class Event {
                   @NonNull AttributeMap attributeMap,
                   @NonNull List<Footprint> footprints,
                   @Nullable Severity severity,
-                  long timestamp) {
+                  @NonNull Date timestamp) {
         mUuid = uuid;
         mThreadDatas = threadDatas;
         mExceptionDatas = exceptionDatas;
@@ -66,17 +70,6 @@ class Event {
         mFootprints = footprints;
         mSeverity = severity;
         mTimestamp = timestamp;
-    }
-
-    private Event(String uuid,
-                  List<ThreadData> threadDatas,
-                  List<ExceptionData> exceptionDatas,
-                  ThreadData crashingThread,
-                  String message,
-                  AttributeMap attributeMap,
-                  List<Footprint> footprints,
-                  @Nullable Severity severity) {
-        this(uuid, threadDatas, exceptionDatas, crashingThread, message, attributeMap, footprints, severity, System.currentTimeMillis());
     }
 
     Event(@NonNull Throwable exception, @NonNull AttributeMap attributeMap, @NonNull List<Footprint> footprints) {
@@ -89,13 +82,13 @@ class Event {
         mSeverity = Severity.ERROR;
         mAttributeMap = attributeMap;
         mFootprints = footprints;
-        mTimestamp = System.currentTimeMillis();
+        mTimestamp = new Date();
     }
     Event(@NonNull Severity severity, @NonNull String message, @NonNull AttributeMap attributeMap, List<Footprint> footprints) {
-        this(generateUuid(), new ArrayList<ThreadData>(), new ArrayList<ExceptionData>(), null, message, attributeMap, footprints, severity, System.currentTimeMillis());
+        this(generateUuid(), new ArrayList<ThreadData>(), new ArrayList<ExceptionData>(), null, message, attributeMap, footprints, severity, new Date());
     }
     private Event(Severity severity, String tombstone, AttributeMap attributeMap, List<Footprint> footprints, String uuid) {
-        this(uuid, new ArrayList<ThreadData>(), new ArrayList<ExceptionData>(), null, tombstone,  attributeMap, footprints, severity, System.currentTimeMillis());
+        this(uuid, new ArrayList<ThreadData>(), new ArrayList<ExceptionData>(), null, tombstone,  attributeMap, footprints, severity, new Date());
     }
 
 
@@ -114,7 +107,7 @@ class Event {
         mAttributeMap = attributeMap;
         mFootprints = footprints;
         mSeverity = Severity.CRASH;
-        mTimestamp = 0;
+        mTimestamp = new Date();
     }
 
     public static Event info(@NonNull String message, @NonNull AttributeMap attributeMap, List<Footprint> footprints) {
@@ -160,11 +153,11 @@ class Event {
         return mSeverity;
     }
 
-    long getTimestamp() {
+    Date getTimestamp() {
         return mTimestamp;
     }
 
-    void setTimestamp(long timestamp) {
+    void setTimestamp(Date timestamp) {
         mTimestamp = timestamp;
     }
 
@@ -175,7 +168,7 @@ class Event {
     }
 
     @NonNull
-    JSONObject toCacheJson() {
+    synchronized JSONObject toCacheJson() {
         JSONObject result = new JSONObject();
 
         JsonUtils.safePut(result,"uuid", mUuid);
@@ -194,11 +187,12 @@ class Event {
         if (mSeverity != null) {
             JsonUtils.safePut(result, "severity_ordinal", mSeverity.ordinal());
         }
+        JsonUtils.safePut(result, "occurred_at", sdf.format(mTimestamp));
         return result;
     }
-
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZ", Locale.US);
     @NonNull
-    static Event fromCacheJson(JSONObject jsonObject) {
+    static synchronized Event fromCacheJson(JSONObject jsonObject) {
         String uuid;
         List<ThreadData> threadDatas = new ArrayList<>();
         List<ExceptionData> exceptionDatas = new ArrayList<>();
@@ -207,8 +201,12 @@ class Event {
         AttributeMap attributeMap = new AttributeMap();
         List<Footprint> footprints = new ArrayList<>();
         int severityOrdinal = -1;
+        Date timestamp;
 
         uuid = JsonUtils.safeGetString(jsonObject,"uuid");
+        if (uuid == null) {
+            uuid = generateUuid(); // better to fake one than break things.
+        }
 
         JSONArray threadDatasJson = JsonUtils.safeGetJSONArray(jsonObject,"thread_datas");
         if (threadDatasJson != null) {
@@ -249,6 +247,13 @@ class Event {
             severity = Severity.values()[severityOrdinal];
         }
 
-        return new Event(uuid, threadDatas, exceptionDatas, crashingThread, message, attributeMap, footprints, severity);
+        try {
+            timestamp = sdf.parse(JsonUtils.safeGetString(jsonObject, "occurred_at"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            timestamp = new Date();
+        }
+
+        return new Event(uuid, threadDatas, exceptionDatas, crashingThread, message, attributeMap, footprints, severity, timestamp);
     }
 }

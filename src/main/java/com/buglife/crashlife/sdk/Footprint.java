@@ -25,20 +25,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 class Footprint implements Parcelable, JSONCaching {
     private final String mName;
-    private final long mTimeStamp;
+    private final Date mTimeStamp;
     private final AttributeMap mMetadata;
 
     Footprint(String name, AttributeMap metadata) {
         mName = name;
-        mTimeStamp = System.currentTimeMillis();
+        mTimeStamp = new Date();
         mMetadata = metadata;
     }
-    private Footprint(String name, AttributeMap metadata, long timeStamp) {
+    private Footprint(String name, AttributeMap metadata, Date timeStamp) {
         mName = name;
         mTimeStamp = timeStamp;
         mMetadata = metadata;
@@ -47,14 +51,14 @@ class Footprint implements Parcelable, JSONCaching {
     @SuppressWarnings("WeakerAccess")
     Footprint(Parcel source) {
         mName = source.readString();
-        mTimeStamp = source.readLong();
+        mTimeStamp = (Date)source.readSerializable();
         mMetadata = source.readParcelable(AttributeMap.class.getClassLoader());
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mName);
-        dest.writeLong(mTimeStamp);
+        dest.writeSerializable(mTimeStamp);
         dest.writeParcelable(mMetadata, 0);
     }
 
@@ -77,22 +81,29 @@ class Footprint implements Parcelable, JSONCaching {
 
 
     @NonNull
-    public JSONObject toCacheJson() {
+    public synchronized JSONObject toCacheJson() {
         JSONObject result = new JSONObject();
 
         JsonUtils.safePut(result,"name", mName);
         JsonUtils.safePut(result,"metadata", mMetadata.toCacheJson());
-        JsonUtils.safePut(result,"timestamp", mTimeStamp);
+        JsonUtils.safePut(result,"left_at", sdf.format(mTimeStamp));
         return result;
     }
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZ", Locale.US);
     @NonNull
-    private static Footprint fromCacheJson(JSONObject jsonObject) {
+    private static synchronized Footprint fromCacheJson(JSONObject jsonObject) {
         String name;
-        long timestamp;
+        String timestampString;
         AttributeMap attributeMap = null;
 
         name = JsonUtils.safeGetString(jsonObject,"name");
-        timestamp = JsonUtils.safeGetLong(jsonObject,"timestamp");
+        timestampString = JsonUtils.safeGetString(jsonObject,"left_at");
+        Date timestamp = null;
+        try {
+            timestamp = sdf.parse(timestampString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         JSONArray attributeMapJson = JsonUtils.safeGetJSONArray(jsonObject,"metadata");
         if (attributeMapJson != null) {
             attributeMap = AttributeMap.fromCacheJson(attributeMapJson);

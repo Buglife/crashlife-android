@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 final class ReportCache {
@@ -64,7 +65,7 @@ final class ReportCache {
 
     void deleteCachedReports(List<Event> successfullyPostedEvents, List<Event> successfullyPostedNativeEvents) {
         for (Event e : successfullyPostedEvents) {
-            long timestamp = e.getTimestamp();
+            long timestamp = e.getTimestamp().getTime();
             File cacheFile = new File(mCachedReportsDirectory, String.valueOf(timestamp) + ".json");
             // Two posts in short order with additional log events could cause overlap.
             if (cacheFile.exists() && !cacheFile.delete()) {
@@ -180,7 +181,7 @@ final class ReportCache {
             // In the native case, it's here, because we can't alter the crash report getting saved out
             Event event = Event.crash(cachedEventString, attributeMap, footprints, cachedEvent.getName().replace(".txt", "").toLowerCase());
             long timestamp = cachedEvent.lastModified();
-            event.setTimestamp(timestamp);
+            event.setTimestamp(new Date(timestamp));
             events.add(event);
         }
         return events;
@@ -210,7 +211,7 @@ final class ReportCache {
             }
 
             Event event = Event.fromCacheJson(cachedEventJson);
-            event.setTimestamp(Long.parseLong(cachedEvent.getName().replace(".json", "")));
+            event.setTimestamp(new Date(Long.parseLong(cachedEvent.getName().replace(".json", ""))));
             events.add(event);
         }
         return events;
