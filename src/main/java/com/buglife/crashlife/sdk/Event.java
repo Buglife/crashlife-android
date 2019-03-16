@@ -39,7 +39,20 @@ class Event implements JSONCaching {
         INFO,
         WARNING,
         ERROR,
-        CRASH
+        CRASH;
+        static Severity fromLowercaseString(String sev) {
+            switch (sev) {
+                case "info":
+                    return INFO;
+                case "warning":
+                    return WARNING;
+                case "error":
+                    return ERROR;
+                case "crash":
+                    return CRASH;
+            }
+            return null;
+        }
     }
 
     private static final String UUID_FIELD = "uuid";
@@ -50,7 +63,7 @@ class Event implements JSONCaching {
     private static final String TOMBSTONE = "android_tombstone";
     private static final String ATTRIBUTEMAP = "attributes";
     private static final String FOOTPRINTS = "footprints";
-    private static final String SEVERITY = "severity_ordinal";
+    private static final String SEVERITY = "severity";
     private static final String TIMESTAMP = "occurred_at";
 
     @NonNull private final String mUuid;
@@ -202,7 +215,7 @@ class Event implements JSONCaching {
         JsonUtils.safePut(result, ATTRIBUTEMAP, mAttributeMap.toCacheJson());
         JsonUtils.safePut(result, FOOTPRINTS, JsonUtils.listToCacheJson(mFootprints));
         if (mSeverity != null) {
-            JsonUtils.safePut(result, SEVERITY, mSeverity.ordinal());
+            JsonUtils.safePut(result, SEVERITY, mSeverity.toString().toLowerCase());
         }
         JsonUtils.safePut(result, TIMESTAMP, sdf.format(mTimestamp));
         return result;
@@ -215,10 +228,10 @@ class Event implements JSONCaching {
         List<ExceptionData> exceptionDatas = new ArrayList<>();
         ThreadData crashingThread = null;
         String message;
-        String tombstone = null; // and will likely stay that way because we should only be in this method on a JVM crash
+        String tombstone; // will likely stay null because we should only be in this method on a JVM crash
         AttributeMap attributeMap = new AttributeMap();
         List<Footprint> footprints = new ArrayList<>();
-        int severityOrdinal = -1;
+        String severityStr = "";
         Date timestamp;
 
         uuid = JsonUtils.safeGetString(jsonObject, UUID_FIELD);
@@ -254,16 +267,10 @@ class Event implements JSONCaching {
             footprints = Footprint.listFromCacheJson(footprintsJson);
         }
 
-        try {
-            severityOrdinal = jsonObject.getInt(SEVERITY);
-        } catch (JSONException e) {
-            // this one in try/catch to maintain the non-0 default value
-            // but don't spew about it.
-        }
-
+        severityStr = JsonUtils.safeGetString(jsonObject, SEVERITY);
         Severity severity = null;
-        if (severityOrdinal >= 0) {
-            severity = Severity.values()[severityOrdinal];
+        if (severityStr != null) {
+            severity = Severity.fromLowercaseString(severityStr);
         }
 
         try {
