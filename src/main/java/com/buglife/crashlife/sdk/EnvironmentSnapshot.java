@@ -36,6 +36,18 @@ import org.json.JSONObject;
  * Represents a "snapshot" of the current environment the moment that the bug reporter is invoked.
  */
 public final class EnvironmentSnapshot implements Parcelable {
+    private static final String BATTERY_LEVEL = "battery_level";
+    private static final String FREE_MEMORY_BYTES = "free_memory_bytes";
+    private static final String TOTAL_MEMORY_BYTES = "total_memory_bytes";
+    private static final String FREE_CAPACITY_BYTES = "free_capacity_bytes";
+    private static final String TOTAL_CAPACITY_BYTES = "total_capacity_bytes";
+    private static final String TOTAL_CAPACITY_BYTES1 = "total_capacity_bytes";
+    private static final String CARRIER_NAME = "carrier_name";
+    private static final String ANDROID_MOBILE_NETWORK_SUBTYPE = "android_mobile_network_subtype";
+    private static final String WIFI_CONNECTED = "wifi_connected";
+    private static final String LOCALE = "locale";
+    private static final String LOCATION = "location";
+
     private final float mBatteryLevel;
     private final long mFreeMemoryBytes;
     private final long mTotalMemoryBytes;
@@ -193,36 +205,37 @@ public final class EnvironmentSnapshot implements Parcelable {
         }
     };
 
+
     @NonNull
     JSONObject toCacheJson() {
         JSONObject result = new JSONObject();
 
-        JsonUtils.safePut(result,"battery_level", getBatteryLevel());
-        JsonUtils.safePut(result,"free_memory_bytes", getFreeMemoryBytes());
-        JsonUtils.safePut(result,"total_memory_bytes", getTotalMemoryBytes());
-        JsonUtils.safePut(result,"free_capacity_bytes", getFreeCapacityBytes());
-        JsonUtils.safePut(result,"total_capacity_bytes", getTotalCapacityBytes());
-        JsonUtils.safePut(result,"carrier_name", getCarrierName());
-        JsonUtils.safePut(result,"android_mobile_network_subtype", getMobileNetworkSubtype());
-        JsonUtils.safePut(result,"wifi_connected", getWifiConnected());
-        JsonUtils.safePut(result,"locale", getLocale());
+        JsonUtils.safePut(result, BATTERY_LEVEL, getBatteryLevel());
+        JsonUtils.safePut(result, FREE_MEMORY_BYTES, getFreeMemoryBytes());
+        JsonUtils.safePut(result, TOTAL_MEMORY_BYTES, getTotalMemoryBytes());
+        JsonUtils.safePut(result, FREE_CAPACITY_BYTES, getFreeCapacityBytes());
+        JsonUtils.safePut(result, TOTAL_CAPACITY_BYTES, getTotalCapacityBytes());
+        JsonUtils.safePut(result, CARRIER_NAME, getCarrierName());
+        JsonUtils.safePut(result, ANDROID_MOBILE_NETWORK_SUBTYPE, getMobileNetworkSubtype());
+        JsonUtils.safePut(result, WIFI_CONNECTED, getWifiConnected());
+        JsonUtils.safePut(result, LOCALE, getLocale());
         if (getLocation() != null) {
-            JsonUtils.safePut(result, "location", "" + getLocation().getLatitude() + "," + getLocation().getLongitude());
+            JsonUtils.safePut(result, LOCATION, "" + getLocation().getLatitude() + "," + getLocation().getLongitude());
         }
         return result;
     }
 
     @NonNull static EnvironmentSnapshot fromCacheJson(JSONObject jsonObject) {
-        float batteryLevel = (float) JsonUtils.safeGetDouble(jsonObject,"battery_level");
-        long freeMemoryBytes= JsonUtils.safeGetLong(jsonObject,"free_memory_bytes");
-        long totalMemoryBytes= JsonUtils.safeGetLong(jsonObject,"total_memory_bytes");
-        long freeCapacityBytes= JsonUtils.safeGetLong(jsonObject,"free_capacity_bytes");
-        long totalCapacityBytes = JsonUtils.safeGetLong(jsonObject,"total_capacity_bytes");
-        String carrierName= JsonUtils.safeGetString(jsonObject,"carrier_name");
-        int androidMobileNetworkSubtype = JsonUtils.safeGetInt(jsonObject,"android_mobile_network_subtype");
-        boolean wifiConnected = JsonUtils.safeGetBoolean(jsonObject,"wifi_connected");
-        String locale = JsonUtils.safeGetString(jsonObject,"locale");
-        String latlon = JsonUtils.safeGetString(jsonObject,"location");
+        float batteryLevel = (float) JsonUtils.safeGetDouble(jsonObject,BATTERY_LEVEL);
+        long freeMemoryBytes= JsonUtils.safeGetLong(jsonObject, FREE_MEMORY_BYTES);
+        long totalMemoryBytes= JsonUtils.safeGetLong(jsonObject, TOTAL_MEMORY_BYTES);
+        long freeCapacityBytes= JsonUtils.safeGetLong(jsonObject, FREE_CAPACITY_BYTES);
+        long totalCapacityBytes = JsonUtils.safeGetLong(jsonObject, TOTAL_CAPACITY_BYTES1);
+        String carrierName= JsonUtils.safeGetString(jsonObject, CARRIER_NAME);
+        int androidMobileNetworkSubtype = JsonUtils.safeGetInt(jsonObject, ANDROID_MOBILE_NETWORK_SUBTYPE);
+        boolean wifiConnected = JsonUtils.safeGetBoolean(jsonObject, WIFI_CONNECTED);
+        String locale = JsonUtils.safeGetString(jsonObject, LOCALE);
+        String latlon = JsonUtils.safeGetString(jsonObject, LOCATION);
         Location location = null;
         if (latlon != null) {
             String lat_lon[] = latlon.split(",");

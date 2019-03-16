@@ -39,6 +39,9 @@ final class Attribute implements Parcelable {
     @SuppressWarnings("WeakerAccess")
     final static int FLAG_INTERNAL   = 1 << 3;
 
+    private static final String VALUE = "value";
+    private static final String FLAGS = "flags";
+
     private String getNameForFlag(int flag) {
         switch (flag) {
             case FLAG_CUSTOM:
@@ -156,9 +159,9 @@ final class Attribute implements Parcelable {
     @NonNull
     JSONObject toCacheJson() {
         JSONObject dict = new JSONObject();
-        JsonUtils.tryPut(dict,"value", getValue());
+        JsonUtils.tryPut(dict, VALUE, getValue());
 //        JsonUtils.tryPut(dict,"value_type", getValueType().getValue());
-        JsonUtils.tryPut(dict,"flags", getNameForFlag(getFlags()));
+        JsonUtils.tryPut(dict, FLAGS, getNameForFlag(getFlags()));
         return dict;
     }
 
@@ -168,9 +171,9 @@ final class Attribute implements Parcelable {
         ValueType valueType;
         int flags;
         try {
-            value = jsonObject.getString("value"); //if there isn't a value, this is a shitty attribute, and we should skip it.
+            value = jsonObject.getString(VALUE); //if there isn't a value, this is a shitty attribute, and we should skip it.
             valueType = ValueType.STRING; // everything is a string now
-            String flagsString = JsonUtils.safeGetString(jsonObject, "flags");
+            String flagsString = JsonUtils.safeGetString(jsonObject, FLAGS);
             flags = getFlagForName(flagsString);
         } catch (JSONException e) {
             //Is this really useful? Answer: yes.

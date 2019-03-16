@@ -29,6 +29,12 @@ import android.support.annotation.Nullable;
 import org.json.JSONObject;
 
 public final class DeviceSnapshot implements Parcelable {
+
+    private static final String OS_VERSION = "operating_system_version";
+    private static final String DEVICE_MANUFACTURER = "device_manufacturer";
+    private static final String DEVICE_MODEL = "device_model";
+    private static final String DEVICE_BRAND = "device_brand";
+    private static final String DEVICE_IDENTIFIER = "device_identifier";
     private final String mOSVersion;
     private final String mDeviceManufacturer;
     private final String mDeviceModel;
@@ -114,20 +120,20 @@ public final class DeviceSnapshot implements Parcelable {
     JSONObject toCacheJson() {
         JSONObject result = new JSONObject();
 
-        JsonUtils.safePut(result,"operating_system_version", getOSVersion());
-        JsonUtils.safePut(result,"device_manufacturer", getDeviceManufacturer());
-        JsonUtils.safePut(result,"device_model", getDeviceModel());
-        JsonUtils.safePut(result,"device_brand", getDeviceBrand());
-        JsonUtils.safePut(result,"device_identifier", getDeviceIdentifier());
+        JsonUtils.safePut(result, OS_VERSION, getOSVersion());
+        JsonUtils.safePut(result, DEVICE_MANUFACTURER, getDeviceManufacturer());
+        JsonUtils.safePut(result, DEVICE_MODEL, getDeviceModel());
+        JsonUtils.safePut(result, DEVICE_BRAND, getDeviceBrand());
+        JsonUtils.safePut(result, DEVICE_IDENTIFIER, getDeviceIdentifier());
         return result;
     }
 
     @NonNull static DeviceSnapshot fromCacheJson(JSONObject jsonObject) {
-        String osVersion = JsonUtils.safeGetString(jsonObject,"operating_system_version");
-        String deviceManufacturer = JsonUtils.safeGetString(jsonObject,"device_manufacturer");
-        String deviceModel = JsonUtils.safeGetString(jsonObject,"device_model");
-        String deviceBrand = JsonUtils.safeGetString(jsonObject,"device_brand");
-        String deviceIdentifier = JsonUtils.safeGetString(jsonObject,"device_identifier");
+        String osVersion = JsonUtils.safeGetString(jsonObject, OS_VERSION);
+        String deviceManufacturer = JsonUtils.safeGetString(jsonObject, DEVICE_MANUFACTURER);
+        String deviceModel = JsonUtils.safeGetString(jsonObject, DEVICE_MODEL);
+        String deviceBrand = JsonUtils.safeGetString(jsonObject, DEVICE_BRAND);
+        String deviceIdentifier = JsonUtils.safeGetString(jsonObject, DEVICE_IDENTIFIER);
 
         return new DeviceSnapshot(osVersion, deviceManufacturer, deviceModel, deviceBrand, deviceIdentifier);
     }

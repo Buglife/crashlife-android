@@ -35,6 +35,7 @@ import java.util.Set;
  * Represents a collection of custom attributes set by a user.
  */
 final class AttributeMap implements Parcelable {
+    private static final String KEY = "key";
     private final HashMap<String, Attribute> mAttributes;
 
     AttributeMap() {
@@ -116,7 +117,7 @@ final class AttributeMap implements Parcelable {
             if (attr != null) {
                 JSONObject attrDict = attr.toCacheJson();
                 JSONObject fullDict = new JSONObject();
-                JsonUtils.tryPut(fullDict, "key", key);
+                JsonUtils.tryPut(fullDict, KEY, key);
                 //add the entries of attrDict to fullDict
                 Iterator it = attrDict.keys();
                 while (it.hasNext()) {
@@ -137,7 +138,7 @@ final class AttributeMap implements Parcelable {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject fullDict = jsonArray.optJSONObject(i);
                 if (fullDict != null) {
-                    String key = fullDict.optString("key");
+                    String key = fullDict.optString(KEY);
                     if (key == null) {
                         continue;
                     }
@@ -148,7 +149,7 @@ final class AttributeMap implements Parcelable {
                         String value = fullDict.optString(attrPartKey);
                         JsonUtils.safePut(attrDict, attrPartKey, value);
                     }
-                    attrDict.remove("key");
+                    attrDict.remove(KEY);
                     Attribute attr = Attribute.fromCacheJson(attrDict);
                     attributes.put(key, attr);
                 }

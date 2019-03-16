@@ -42,6 +42,17 @@ class Event implements JSONCaching {
         CRASH
     }
 
+    private static final String UUID_FIELD = "uuid";
+    private static final String THREADS = "threads";
+    private static final String EXCEPTIONS = "exceptions";
+    private static final String CRASHINGTHREAD = "crashing_thread";
+    private static final String MESSAGE = "message";
+    private static final String TOMBSTONE = "android_tombstone";
+    private static final String ATTRIBUTEMAP = "attributes";
+    private static final String FOOTPRINTS = "footprints";
+    private static final String SEVERITY = "severity_ordinal";
+    private static final String TIMESTAMP = "occurred_at";
+
     @NonNull private final String mUuid;
     @Nullable private final List<ThreadData> mThreadDatas;
     @Nullable private final List<ExceptionData> mExceptionDatas;
@@ -176,24 +187,24 @@ class Event implements JSONCaching {
     public synchronized JSONObject toCacheJson() {
         JSONObject result = new JSONObject();
 
-        JsonUtils.safePut(result,"uuid", mUuid);
+        JsonUtils.safePut(result, UUID_FIELD, mUuid);
         if (mThreadDatas != null) {
-            JsonUtils.safePut(result, "thread_datas", JsonUtils.listToCacheJson(mThreadDatas));
+            JsonUtils.safePut(result, THREADS, JsonUtils.listToCacheJson(mThreadDatas));
         }
         if (mExceptionDatas != null) {
-            JsonUtils.safePut(result, "exception_datas", JsonUtils.listToCacheJson(mExceptionDatas));
+            JsonUtils.safePut(result, EXCEPTIONS, JsonUtils.listToCacheJson(mExceptionDatas));
         }
         if (mCrashingThread != null) {
-            JsonUtils.safePut(result, "crashing_thread", mCrashingThread.toCacheJson());
+            JsonUtils.safePut(result, CRASHINGTHREAD, mCrashingThread.toCacheJson());
         }
-        JsonUtils.safePut(result,"message", mMessage);
-        JsonUtils.safePut(result, "android_tombstone", mTombstone);
-        JsonUtils.safePut(result,"attributes_map", mAttributeMap.toCacheJson());
-        JsonUtils.safePut(result,"footprints", JsonUtils.listToCacheJson(mFootprints));
+        JsonUtils.safePut(result, MESSAGE, mMessage);
+        JsonUtils.safePut(result, TOMBSTONE, mTombstone);
+        JsonUtils.safePut(result, ATTRIBUTEMAP, mAttributeMap.toCacheJson());
+        JsonUtils.safePut(result, FOOTPRINTS, JsonUtils.listToCacheJson(mFootprints));
         if (mSeverity != null) {
-            JsonUtils.safePut(result, "severity_ordinal", mSeverity.ordinal());
+            JsonUtils.safePut(result, SEVERITY, mSeverity.ordinal());
         }
-        JsonUtils.safePut(result, "occurred_at", sdf.format(mTimestamp));
+        JsonUtils.safePut(result, TIMESTAMP, sdf.format(mTimestamp));
         return result;
     }
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZ", Locale.US);
@@ -204,45 +215,47 @@ class Event implements JSONCaching {
         List<ExceptionData> exceptionDatas = new ArrayList<>();
         ThreadData crashingThread = null;
         String message;
+        String tombstone = null; // and will likely stay that way because we should only be in this method on a JVM crash
         AttributeMap attributeMap = new AttributeMap();
         List<Footprint> footprints = new ArrayList<>();
         int severityOrdinal = -1;
         Date timestamp;
 
-        uuid = JsonUtils.safeGetString(jsonObject,"uuid");
+        uuid = JsonUtils.safeGetString(jsonObject, UUID_FIELD);
         if (uuid == null) {
             uuid = generateUuid(); // better to fake one than break things.
         }
 
-        JSONArray threadDatasJson = JsonUtils.safeGetJSONArray(jsonObject,"thread_datas");
+        JSONArray threadDatasJson = JsonUtils.safeGetJSONArray(jsonObject, THREADS);
         if (threadDatasJson != null) {
             threadDatas = ThreadData.listFromCacheJson(threadDatasJson);
         }
 
-        JSONArray exceptionDatasJson = JsonUtils.safeGetJSONArray(jsonObject,"exception_datas");
+        JSONArray exceptionDatasJson = JsonUtils.safeGetJSONArray(jsonObject, EXCEPTIONS);
         if (exceptionDatasJson != null) {
             exceptionDatas = ExceptionData.listFromCacheJson(exceptionDatasJson);
         }
 
-        JSONObject crashingThreadJson = JsonUtils.safeGetJSONObject(jsonObject,"crashing_thread");
+        JSONObject crashingThreadJson = JsonUtils.safeGetJSONObject(jsonObject, CRASHINGTHREAD);
         if (crashingThreadJson != null) {
             crashingThread = ThreadData.fromCacheJson(crashingThreadJson);
         }
 
-        message = JsonUtils.safeGetString(jsonObject,"message");
+        message = JsonUtils.safeGetString(jsonObject, MESSAGE);
+        tombstone = JsonUtils.safeGetString(jsonObject, TOMBSTONE);
 
-        JSONArray attributeMapJson = JsonUtils.safeGetJSONArray(jsonObject,"attributes_map");
+        JSONArray attributeMapJson = JsonUtils.safeGetJSONArray(jsonObject, ATTRIBUTEMAP);
         if (attributeMapJson != null) {
             attributeMap = AttributeMap.fromCacheJson(attributeMapJson);
         }
 
-        JSONArray footprintsJson = JsonUtils.safeGetJSONArray(jsonObject,"footprints");
+        JSONArray footprintsJson = JsonUtils.safeGetJSONArray(jsonObject, FOOTPRINTS);
         if (footprintsJson != null) {
             footprints = Footprint.listFromCacheJson(footprintsJson);
         }
 
         try {
-            severityOrdinal = jsonObject.getInt("severity_ordinal");
+            severityOrdinal = jsonObject.getInt(SEVERITY);
         } catch (JSONException e) {
             // this one in try/catch to maintain the non-0 default value
             // but don't spew about it.
@@ -254,12 +267,12 @@ class Event implements JSONCaching {
         }
 
         try {
-            timestamp = sdf.parse(JsonUtils.safeGetString(jsonObject, "occurred_at"));
+            timestamp = sdf.parse(JsonUtils.safeGetString(jsonObject, TIMESTAMP));
         } catch (ParseException e) {
             e.printStackTrace();
             timestamp = new Date();
         }
 
-        return new Event(uuid, threadDatas, exceptionDatas, crashingThread, message, null, attributeMap, footprints, severity, timestamp);
+        return new Event(uuid, threadDatas, exceptionDatas, crashingThread, message, tombstone, attributeMap, footprints, severity, timestamp);
     }
 }
