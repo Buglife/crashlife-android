@@ -28,6 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class StackFrame implements JSONCaching {
+    private static final String FILE = "file";
+    private static final String LINE_NUMBER = "line_number";
+    private static final String CLASS_NAME = "class_name";
+    private static final String METHOD_NAME = "method_name";
+    private static final String IS_NATIVE = "is_native";
+    private static final String IS_EXTERNAL = "is_external";
     @Nullable private final String mFileName;
     private final int mLineNumber;
     @Nullable private final String mClassName;
@@ -129,12 +135,12 @@ final class StackFrame implements JSONCaching {
         JSONObject result = new JSONObject();
 
 
-        JsonUtils.safePut(result,"file", getFileName());
-        JsonUtils.safePut(result,"line_number", getLineNumber());
-        JsonUtils.safePut(result,"class_name", getClassName());
-        JsonUtils.safePut(result,"method_name", getMethodName());
-        JsonUtils.safePut(result,"is_native", isNativeMethod());
-        JsonUtils.safePut(result,"is_external", isExternal());
+        JsonUtils.safePut(result, FILE, getFileName());
+        JsonUtils.safePut(result, LINE_NUMBER, getLineNumber());
+        JsonUtils.safePut(result, CLASS_NAME, getClassName());
+        JsonUtils.safePut(result, METHOD_NAME, getMethodName());
+        JsonUtils.safePut(result, IS_NATIVE, isNativeMethod());
+        JsonUtils.safePut(result, IS_EXTERNAL, isExternal());
         return result;
     }
 
@@ -145,11 +151,13 @@ final class StackFrame implements JSONCaching {
         String className;
         String methodName;
         boolean isNativeMethod;
-         fileName = JsonUtils.safeGetString(jsonObject,"file");
-         lineNumber = JsonUtils.safeGetInt(jsonObject,"line_number");
-         className = JsonUtils.safeGetString(jsonObject,"class_name");
-         methodName = JsonUtils.safeGetString(jsonObject,"method_name");
-         isNativeMethod = JsonUtils.safeGetBoolean(jsonObject,"is_native");
+        boolean isExternal;
+         fileName = JsonUtils.safeGetString(jsonObject, FILE);
+         lineNumber = JsonUtils.safeGetInt(jsonObject, LINE_NUMBER);
+         className = JsonUtils.safeGetString(jsonObject, CLASS_NAME);
+         methodName = JsonUtils.safeGetString(jsonObject, METHOD_NAME);
+         isNativeMethod = JsonUtils.safeGetBoolean(jsonObject, IS_NATIVE);
+         // we don't need to read is_external. That's computed at cache/submission time.
 
         return new StackFrame(fileName, lineNumber, className, methodName, isNativeMethod);
     }

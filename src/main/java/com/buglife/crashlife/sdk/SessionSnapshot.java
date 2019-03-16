@@ -30,6 +30,15 @@ import org.json.JSONObject;
 
 @SuppressWarnings("WeakerAccess")
 public class SessionSnapshot implements Parcelable {
+    private static final String PLATFORM = "platform";
+    private static final String SDK_VERSION = "sdk_version";
+    private static final String SDK_NAME = "sdk_name";
+    private static final String USER_IDENTIFIER = "user_identifier";
+    private static final String BUNDLE_IDENTIFIER = "bundle_identifier";
+    private static final String BUNDLE_NAME = "bundle_name";
+    private static final String BUNDLE_SHORT_VERSION = "bundle_short_version";
+    private static final String BUNDLE_VERSION = "bundle_version";
+    private static final String IS_DEBUG = "is_debug";
     private final String mPlatform;
     private final String mSDKVersion;
     private final String mSDKName;
@@ -165,28 +174,28 @@ public class SessionSnapshot implements Parcelable {
     JSONObject toCacheJson() {
         JSONObject result = new JSONObject();
 
-        JsonUtils.safePut(result,"platform", getPlatform());
-        JsonUtils.safePut(result,"sdk_version", getSDKVersion());
-        JsonUtils.safePut(result,"sdk_name", getSDKName());
-        JsonUtils.safePut(result,"user_identifier", getUserIdentifier());
-        JsonUtils.safePut(result,"bundle_identifier", getBundleIdentifier());
-        JsonUtils.safePut(result,"bundle_name", getBundleName());
-        JsonUtils.safePut(result,"bundle_short_version", getBundleShortVersion());
-        JsonUtils.safePut(result,"bundle_version", getBundleVersion());
-        JsonUtils.safePut(result,"is_debug", getDebugBuild());
+        JsonUtils.safePut(result, PLATFORM, getPlatform());
+        JsonUtils.safePut(result, SDK_VERSION, getSDKVersion());
+        JsonUtils.safePut(result, SDK_NAME, getSDKName());
+        JsonUtils.safePut(result, USER_IDENTIFIER, getUserIdentifier());
+        JsonUtils.safePut(result, BUNDLE_IDENTIFIER, getBundleIdentifier());
+        JsonUtils.safePut(result, BUNDLE_NAME, getBundleName());
+        JsonUtils.safePut(result, BUNDLE_SHORT_VERSION, getBundleShortVersion());
+        JsonUtils.safePut(result, BUNDLE_VERSION, getBundleVersion());
+        JsonUtils.safePut(result, IS_DEBUG, getDebugBuild());
         return result;
     }
 
     @NonNull static SessionSnapshot fromCacheJson(JSONObject jsonObject) {
-        String platform = JsonUtils.safeGetString(jsonObject,"platform");
-        String sdkVersion = JsonUtils.safeGetString(jsonObject,"sdk_version");
-        String sdkName = JsonUtils.safeGetString(jsonObject,"sdk_name");
-        String userIdentifier = JsonUtils.safeGetString(jsonObject,"user_identifier");
-        String bundleIdentifier = JsonUtils.safeGetString(jsonObject,"bundle_identifier");
-        String bundleName = JsonUtils.safeGetString(jsonObject,"bundle_name");
-        String bundleShortVersion = JsonUtils.safeGetString(jsonObject,"bundle_short_version");
-        String bundleVersion = JsonUtils.safeGetString(jsonObject,"bundle_version");
-        boolean debugBuild = JsonUtils.safeGetBoolean(jsonObject,"is_debug");
+        String platform = JsonUtils.safeGetString(jsonObject, PLATFORM);
+        String sdkVersion = JsonUtils.safeGetString(jsonObject, SDK_VERSION);
+        String sdkName = JsonUtils.safeGetString(jsonObject, SDK_NAME);
+        String userIdentifier = JsonUtils.safeGetString(jsonObject, USER_IDENTIFIER);
+        String bundleIdentifier = JsonUtils.safeGetString(jsonObject, BUNDLE_IDENTIFIER);
+        String bundleName = JsonUtils.safeGetString(jsonObject, BUNDLE_NAME);
+        String bundleShortVersion = JsonUtils.safeGetString(jsonObject, BUNDLE_SHORT_VERSION);
+        String bundleVersion = JsonUtils.safeGetString(jsonObject, BUNDLE_VERSION);
+        boolean debugBuild = JsonUtils.safeGetBoolean(jsonObject, IS_DEBUG);
 
         return new SessionSnapshot(platform, sdkVersion, sdkName, userIdentifier,
                 bundleIdentifier, bundleName, bundleShortVersion, bundleVersion, debugBuild);

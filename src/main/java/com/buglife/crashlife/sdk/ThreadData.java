@@ -32,6 +32,14 @@ import java.util.Map;
  * Represents a thread at the time that a given event is captured.
  */
 final class ThreadData implements JSONCaching {
+    private static final String ID = "id";
+    private static final String NAME = "name";
+    private static final String STACK_FRAMES = "stack_frames";
+    private static final String PRIORITY = "priority";
+    private static final String STATE_ORDINAL = "state_ordinal";
+    private static final String IS_ALIVE = "is_alive";
+    private static final String IS_DAEMON = "is_daemon";
+    private static final String IS_INTERRUPTED = "is_interrupted";
     private final long mId;
     @Nullable private final String mName;
     @NonNull private final List<StackFrame> mStackframes;
@@ -101,19 +109,19 @@ final class ThreadData implements JSONCaching {
     public JSONObject toCacheJson() {
         JSONObject result = new JSONObject();
 
-        JsonUtils.safePut(result,"id", mId);
-        JsonUtils.safePut(result,"name", mName);
-        JsonUtils.safePut(result,"stack_frames", JsonUtils.listToCacheJson(mStackframes));
-        JsonUtils.safePut(result,"priority", mPriority);
+        JsonUtils.safePut(result, ID, mId);
+        JsonUtils.safePut(result, NAME, mName);
+        JsonUtils.safePut(result, STACK_FRAMES, JsonUtils.listToCacheJson(mStackframes));
+        JsonUtils.safePut(result, PRIORITY, mPriority);
 
         int state = 0;
         if (mState != null) {
             state = mState.ordinal();
         }
-        JsonUtils.safePut(result,"state_ordinal", state);
-        JsonUtils.safePut(result,"is_alive", mIsAlive);
-        JsonUtils.safePut(result,"is_daemon", mIsDaemon);
-        JsonUtils.safePut(result,"is_interrupted", mIsInterrupted);
+        JsonUtils.safePut(result, STATE_ORDINAL, state);
+        JsonUtils.safePut(result, IS_ALIVE, mIsAlive);
+        JsonUtils.safePut(result, IS_DAEMON, mIsDaemon);
+        JsonUtils.safePut(result, IS_INTERRUPTED, mIsInterrupted);
         return result;
     }
 
@@ -128,19 +136,19 @@ final class ThreadData implements JSONCaching {
         boolean isDaemon;
         boolean isInterrupted;
 
-        id = JsonUtils.safeGetLong(jsonObject,"id");
-        name = JsonUtils.safeGetString(jsonObject,"name");
-        JSONArray stackframesJson = JsonUtils.safeGetJSONArray(jsonObject,"stack_frames");
+        id = JsonUtils.safeGetLong(jsonObject, ID);
+        name = JsonUtils.safeGetString(jsonObject, NAME);
+        JSONArray stackframesJson = JsonUtils.safeGetJSONArray(jsonObject, STACK_FRAMES);
         if (stackframesJson != null) {
             stackFrames = StackFrame.listFromCacheJson(stackframesJson);
         }
-        priority = JsonUtils.safeGetInt(jsonObject,"priority");
-        isDaemon = JsonUtils.safeGetBoolean(jsonObject,"is_daemon");
-        isInterrupted = JsonUtils.safeGetBoolean(jsonObject,"is_interrupted");
+        priority = JsonUtils.safeGetInt(jsonObject, PRIORITY);
+        isDaemon = JsonUtils.safeGetBoolean(jsonObject, IS_DAEMON);
+        isInterrupted = JsonUtils.safeGetBoolean(jsonObject, IS_INTERRUPTED);
 
         try {
-            stateOrdinal = jsonObject.getInt("state_ordinal");
-            isAlive = jsonObject.getBoolean("is_alive"); // do these two ourselves to keep initial value
+            stateOrdinal = jsonObject.getInt(STATE_ORDINAL);
+            isAlive = jsonObject.getBoolean(IS_ALIVE); // do these two ourselves to keep initial value
         } catch (JSONException e) {
             // Nothing to do here
         }
