@@ -10,7 +10,7 @@ Crashlife is an awesome crash reporting SDK & web platform for Android apps. Her
 2. Crashlife sends the crash report to the Crashlife web dashboard
 3. There is no step 3.
 
-You can also find Crashlife for iOS [here](https://github.com/buglife/crashlife-ios) (coming soon!)
+You can also find Crashlife for iOS [here](https://github.com/buglife/crashlife-ios)
 
 
 ---
