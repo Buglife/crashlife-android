@@ -44,6 +44,16 @@ You can also find Crashlife for iOS [here](https://github.com/buglife/crashlife-
 
 5. On relaunch, your crash report will be submitted; then go to the Crashlife web dashboard. 
 
+### Proguard
+
+If using Proguard, you'll need to add the following to your `proguard-rules.
+
+```
+-keep class com.crashlife.** { *; }
+-dontwarn com.crashlife.**
+-keep class ru.ivanarh.** { *; }
+```
+
 ## Usage
 
 ### Crash reporting

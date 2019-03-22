@@ -129,6 +129,8 @@
 # External Libraries
 ########################################
 
+-keep class com.crashlife.** { *; }
+-dontwarn com.crashlife.**
 -keep class ru.ivanarh.** { *; }
 
 #############
