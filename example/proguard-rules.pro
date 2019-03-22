@@ -129,6 +129,7 @@
 # External Libraries
 ########################################
 
+-keep class ru.ivanarh.** { *; }
 
 #############
 # Google Play Services
