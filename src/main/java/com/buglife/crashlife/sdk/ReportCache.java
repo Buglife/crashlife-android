@@ -157,11 +157,18 @@ final class ReportCache {
                 JSONObject snapshots = new JSONObject(jsonString);
                 JSONObject environmentSnapshot = snapshots.optJSONObject("environment_snapshot");
                 JSONObject deviceSnapshot = snapshots.optJSONObject("device_snapshot");
+                JSONObject libBuildIds = snapshots.optJSONObject("lib_build_ids");
                 if (environmentSnapshot != null) {
                     attributeMap.putAll(JsonUtils.systemAttributesFromJsonObject(environmentSnapshot));
                 }
                 if (deviceSnapshot != null) {
                     attributeMap.putAll(JsonUtils.systemAttributesFromJsonObject(deviceSnapshot));
+                }
+                if (libBuildIds != null) {
+                    // Someday we'll have a better way to do this. That is not this day.
+                    String yuck = libBuildIds.toString();
+                    Attribute attr = new Attribute(yuck, Attribute.ValueType.STRING, Attribute.FLAG_INTERNAL);
+                    attributeMap.put("lib_build_ids", attr);
                 }
             } catch (Exception e) {
                 e.printStackTrace(); // :/ not sure that's right at this hour.
