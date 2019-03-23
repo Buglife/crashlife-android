@@ -98,7 +98,6 @@ class ElfParser {
         } else if (mappedByteBuffer != null) {
             byte temp = mappedByteBuffer.get();
             val = temp & 0xFF; // bytes are signed in Java =_= so assigning them to a longer type risks sign extension.
-            mappedByteBuffer.position(mappedByteBuffer.position()+1);
         }
         if (val < 0) throw new ElfException("Trying to read outside file");
         return (short) val;
