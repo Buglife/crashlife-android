@@ -32,7 +32,7 @@ class ElfNote {
         descSize = parser.readInt();
         type = parser.readInt();
         byte nameBytes[] = new byte[nameSize];
-        byte descBytes[] = new byte[descSize];
+        descBytes = new byte[descSize];
         int bytesRead = parser.read(nameBytes);
         if (bytesRead != nameSize) {
             throw new ElfException("Error reading note (read " + bytesRead + "bytes - expected to " + "read " + nameSize + "bytes)");

@@ -242,7 +242,8 @@ public class CrashService extends NDCrashService {
                 continue;
             }
             boolean littleEndian = elf.encoding == ElfFile.DATA_LSB;
-            return computeDebugId(note.getDescBytes(), littleEndian);
+            byte descBytes[] = note.getDescBytes();
+            return computeDebugId(descBytes, littleEndian);
         }
         return null;
     }
