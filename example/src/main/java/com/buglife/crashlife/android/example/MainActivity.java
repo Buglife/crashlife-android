@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     LocationListener mLocationListener;
 
     private native void crashMe();
+    private native void crashMeHarder();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showDebugMenuButtonTapped(View view) {
+        crashMe();
         Intent intent = new Intent(this, DebugMenuActivity.class);
         startActivity(intent);
     }
