@@ -158,6 +158,7 @@ final class ReportCache {
                 JSONObject environmentSnapshot = snapshots.optJSONObject("environment_snapshot");
                 JSONObject deviceSnapshot = snapshots.optJSONObject("device_snapshot");
                 JSONObject libBuildIds = snapshots.optJSONObject("lib_build_ids");
+                JSONArray embeddedLibs = snapshots.optJSONArray("embedded_libs");
                 if (environmentSnapshot != null) {
                     attributeMap.putAll(JsonUtils.systemAttributesFromJsonObject(environmentSnapshot));
                 }
@@ -169,6 +170,11 @@ final class ReportCache {
                     String yuck = libBuildIds.toString();
                     Attribute attr = new Attribute(yuck, Attribute.ValueType.STRING, Attribute.FLAG_INTERNAL);
                     attributeMap.put("lib_build_ids", attr);
+                }
+                if (embeddedLibs != null) {
+                    String yuuuuck = embeddedLibs.toString();
+                    Attribute attr = new Attribute(yuuuuck, Attribute.ValueType.STRING, Attribute.FLAG_INTERNAL);
+                    attributeMap.put("embedded_libs", attr);
                 }
             } catch (Exception e) {
                 e.printStackTrace(); // :/ not sure that's right at this hour.

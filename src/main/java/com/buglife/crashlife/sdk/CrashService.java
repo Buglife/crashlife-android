@@ -19,6 +19,7 @@ package com.buglife.crashlife.sdk;
 
 import android.support.annotation.Nullable;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -44,6 +45,7 @@ public class CrashService extends NDCrashService {
         DeviceSnapshot deviceSnapshot = new DeviceSnapshot(this);
         //SessionSnapshot will have to be managed like the footprints/attributemaps files.
         JSONObject libIds = new JSONObject();
+        JSONArray embeddedLibs = new JSONArray();
 
         try {
             Set<String> libs = new HashSet<>();
@@ -56,6 +58,8 @@ public class CrashService extends NDCrashService {
                 if (line.endsWith(".so")) {
                     int n = line.lastIndexOf(" ");
                     String lib = line.substring(n + 1);
+                    // TODO: figure out if we ever need to symbolicate system symbols
+                    // if so, we should get their build-ids too (if they're readable)
                     if (!(lib.startsWith("/system") || lib.startsWith("/vendor"))) {
                         libs.add(lib);
                     }
@@ -70,10 +74,29 @@ public class CrashService extends NDCrashService {
                     Log.d(line);
                     String apk = line.substring(n + 1);
                     if (!apk.startsWith("/vendor")) {
-                        ElfFile elf = elfFileForZippedElf(apk, longOffset, indexRangeList);
+                        long outFoundOffset[] = new long[1];
+                        outFoundOffset[0] = -1; // fastest way to get an inout param :/
+                        ElfFile elf = elfFileForZippedElf(apk, longOffset, outFoundOffset, indexRangeList);
                         if (elf != null) {
+                            JSONObject embeddedLib = new JSONObject();
+                            JsonUtils.safePut(embeddedLib, "apk_name", apk);
+                            JsonUtils.safePut(embeddedLib, "offset", outFoundOffset[0]);
                             String buildId = buildIdForLibrary(elf);
-                            // TODO: also get the name of the library. It's somewhere in there.
+                            JsonUtils.safePut(embeddedLib, "build_id", buildId);
+                            embeddedLibs.put(embeddedLib);
+                            // "embedded-libs": [{ "apk-name" : apk,
+                            // "offset": outFoundOffset,
+                            // "build_id": buildId
+                            // },
+                            // { "apk-name" : apk,
+                            // "offset": outFoundOffset,
+                            // "build_id": buildId
+                            // }]
+                            // You might be wondering why the apk_name
+                            // Someday, we may discover a native library
+                            // embedded in an obb. or an oat file.
+                            // or they may decide to split APKs. And all we'll have to go on
+                            // is the file name in the tombstone.
                         }
                     }
                 }
@@ -98,6 +121,7 @@ public class CrashService extends NDCrashService {
         JsonUtils.safePut(metadata, "environment_snapshot", environmentSnapshot.toCacheJson());
         JsonUtils.safePut(metadata, "device_snapshot", deviceSnapshot.toCacheJson());
         JsonUtils.safePut(metadata, "lib_build_ids", libIds);
+        JsonUtils.safePut(metadata, "embedded_libs", embeddedLibs);
 
         File reportFile = new File(reportPath);
         String uuid = reportFile.getName().replace(".txt", "");
@@ -112,7 +136,7 @@ public class CrashService extends NDCrashService {
 
     }
 
-    ElfFile elfFileForZippedElf(String apkPath, long startingOffset, IndexRangeList skipList) {
+    ElfFile elfFileForZippedElf(String apkPath, long startingOffset, long[] foundOffset, IndexRangeList skipList) {
 
         // What's the deal with the skip list? Glad you asked.
         // We have an APK that looks a bit like this:
@@ -135,7 +159,7 @@ public class CrashService extends NDCrashService {
         // The latter part is actually a good thing, as long as we send up the offsets within the APK
         // for each library; it means that we can subtract those offsets from the address. The smallest
         // non-negative effective address generated this way is the symbol we need to symbolicate
-        // using the UUID we'll find with `buildIdForLibrary`. Whew.
+        // using the build-id we'll find with `buildIdForLibrary`. Whew.
 
         File apk = new File(apkPath);
         IndexRange skip = new IndexRange();
@@ -166,6 +190,7 @@ public class CrashService extends NDCrashService {
                 if (elfStart[0] == 0x7f && elfStart[1] == 'E' && elfStart[2] == 'L' && elfStart[3] == 'F') {
                     foundElf = true;
                     skip.start = possibleStart;
+                    foundOffset[0] = possibleStart;
                 } else {
                     possibleStart -= 4096;
                 }
@@ -223,12 +248,14 @@ public class CrashService extends NDCrashService {
     }
 
     // 9229abee-e36c-a8f9-af13-c4eb8b7ec1aa
-    // 04000000 14000000 03000000 474E5500 EEAB2992 6CE3 F9A8 AF13 C4EB8B7EC1AA8 729E0A7
+    // 04000000 14000000 03000000 474E5500 EEAB2992 6CE3 F9A8 AF13 C4EB8B7EC1AA 8729E0A7
     // This follows what Breakpad does
     // *sigh*
+    // Update 3/23/19 - we properly parse the ElfNote now, so we want bytes 0-16 of the real desc.
+    // before we were assuming the whole thing was the desc. Not anymore.
     private String computeDebugId(byte[] descBytes, boolean littleEndian) {
-        byte[] sized = Arrays.copyOfRange(descBytes, 16, 32); // sizeof UUID, truncated or padded with 0s
-        if (littleEndian) {
+        byte[] sized = Arrays.copyOfRange(descBytes, 0, 16); // sizeof UUID, truncated or padded with 0s
+        if (littleEndian) {                                            // we now know that it's 20, truncated, usually
             byte tmp = sized[0];
             sized[0] = sized[3];
             sized[3] = tmp;
