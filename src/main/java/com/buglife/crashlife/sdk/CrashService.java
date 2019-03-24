@@ -40,12 +40,10 @@ import ru.ivanarh.jndcrash.NDCrashService;
 public class CrashService extends NDCrashService {
     @Override
     public void onCrash(String reportPath) {
-        Log.d("In onCrash in a service");
         EnvironmentSnapshot environmentSnapshot = new EnvironmentSnapshot(this);
         DeviceSnapshot deviceSnapshot = new DeviceSnapshot(this);
         //SessionSnapshot will have to be managed like the footprints/attributemaps files.
-        JSONObject libIds = new JSONObject();
-        JSONArray embeddedLibs = new JSONArray();
+        JSONArray libFileIds = new JSONArray();
 
         try {
             Set<String> libs = new HashSet<>();
@@ -71,7 +69,6 @@ public class CrashService extends NDCrashService {
                     String offset = fields[2];
                     long longOffset = Long.valueOf(offset, 16);
                     int n = line.lastIndexOf(" ");
-                    Log.d(line);
                     String apk = line.substring(n + 1);
                     if (!apk.startsWith("/vendor")) {
                         long outFoundOffset[] = new long[1];
@@ -83,7 +80,7 @@ public class CrashService extends NDCrashService {
                             JsonUtils.safePut(embeddedLib, "offset", outFoundOffset[0]);
                             String buildId = buildIdForLibrary(elf);
                             JsonUtils.safePut(embeddedLib, "build_id", buildId);
-                            embeddedLibs.put(embeddedLib);
+                            libFileIds.put(embeddedLib);
                             // "embedded-libs": [{ "apk-name" : apk,
                             // "offset": outFoundOffset,
                             // "build_id": buildId
@@ -103,9 +100,12 @@ public class CrashService extends NDCrashService {
             }
             for (String lib : libs) {
                 String buildId = buildIdForLibraryAtPath(lib);
-                Log.d("got build id " + buildId + " for lib " + lib);
                 if (buildId != null) {
-                    JsonUtils.safePut(libIds, lib, buildId);
+                    JSONObject embeddedLib = new JSONObject();
+                    JsonUtils.safePut(embeddedLib, "lib_file", lib);
+                    JsonUtils.safePut(embeddedLib, "offset", 0);
+                    JsonUtils.safePut(embeddedLib, "build_id", buildId);
+                    libFileIds.put(embeddedLib);
                 }
             }
 
@@ -120,8 +120,7 @@ public class CrashService extends NDCrashService {
         JSONObject metadata = new JSONObject();
         JsonUtils.safePut(metadata, "environment_snapshot", environmentSnapshot.toCacheJson());
         JsonUtils.safePut(metadata, "device_snapshot", deviceSnapshot.toCacheJson());
-        JsonUtils.safePut(metadata, "lib_build_ids", libIds);
-        JsonUtils.safePut(metadata, "embedded_libs", embeddedLibs);
+        JsonUtils.safePut(metadata, "lib_file_ids", libFileIds);
 
         File reportFile = new File(reportPath);
         String uuid = reportFile.getName().replace(".txt", "");
@@ -165,7 +164,6 @@ public class CrashService extends NDCrashService {
         IndexRange skip = new IndexRange();
         skip.end = startingOffset; // we work backwards in this file
         long possibleStart = startingOffset - startingOffset%4096; // page size. TODO: don't hardcode that
-        Log.d("startingOffset = " + startingOffset + "; startingOffset% 4096 = " + startingOffset%4096 + "; possibleStart = " + possibleStart);
         byte elfStart[] = new byte[4];
         boolean foundElf = false;
         try /*(RandomAccessFile file = new RandomAccessFile(apk, "r"))*/ {
@@ -177,7 +175,6 @@ public class CrashService extends NDCrashService {
             // Need to test it on (much) larger so-file libs.
 //            BufferedInputStream buff = new BufferedInputStream(in);
             while (!foundElf && possibleStart >= 0) {
-//                Log.d("rewind and setting to " + possibleStart);
                 skip.start = possibleStart;
                 if (skipList.containsIndex(possibleStart)) {
                     skipList.addIndexRange(skip);
@@ -186,7 +183,6 @@ public class CrashService extends NDCrashService {
                 buffer.rewind();
                 buffer.position((int) possibleStart);
                 buffer.get(elfStart);
-                Log.d("elfStart? " + elfStart[0] + "" + (char) elfStart[1] + "" + (char) elfStart[2] + "" + (char) elfStart[3]);
                 if (elfStart[0] == 0x7f && elfStart[1] == 'E' && elfStart[2] == 'L' && elfStart[3] == 'F') {
                     foundElf = true;
                     skip.start = possibleStart;
